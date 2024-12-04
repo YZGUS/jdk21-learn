@@ -5,6 +5,7 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/virtual-thread/pom.xml" />
+        <option value="$PROJECT_DIR$/nio-demo/pom.xml" />
       </list>
     </option>
   </component>
