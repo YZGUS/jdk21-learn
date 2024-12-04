@@ -1,0 +1,63 @@
+classDiagram
+direction BT
+class AbstractInterruptibleChannel
+class AutoCloseable {
+<<Interface>>
+
+}
+class ByteChannel {
+<<Interface>>
+
+}
+class Channel {
+<<Interface>>
+
+}
+class Closeable {
+<<Interface>>
+
+}
+class FileChannel
+class FileChannelImpl
+class GatheringByteChannel {
+<<Interface>>
+
+}
+class InterruptibleChannel {
+<<Interface>>
+
+}
+class ReadableByteChannel {
+<<Interface>>
+
+}
+class ScatteringByteChannel {
+<<Interface>>
+
+}
+class SeekableByteChannel {
+<<Interface>>
+
+}
+class WritableByteChannel {
+<<Interface>>
+
+}
+
+AbstractInterruptibleChannel  ..>  Channel 
+AbstractInterruptibleChannel  ..>  InterruptibleChannel 
+ByteChannel  -->  ReadableByteChannel 
+ByteChannel  -->  WritableByteChannel 
+Channel  -->  Closeable 
+Closeable  -->  AutoCloseable 
+FileChannel  -->  AbstractInterruptibleChannel 
+FileChannel  ..>  GatheringByteChannel 
+FileChannel  ..>  ScatteringByteChannel 
+FileChannel  ..>  SeekableByteChannel 
+FileChannelImpl  -->  FileChannel 
+GatheringByteChannel  -->  WritableByteChannel 
+InterruptibleChannel  -->  Channel 
+ReadableByteChannel  -->  Channel 
+ScatteringByteChannel  -->  ReadableByteChannel 
+SeekableByteChannel  -->  ByteChannel 
+WritableByteChannel  -->  Channel 
