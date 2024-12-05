@@ -1,5 +1,7 @@
 package org.zengyi.channel;
 
+import org.junit.Test;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -7,6 +9,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -106,6 +109,35 @@ public class FileChannelTest {
             // 使用有参数的force方法将指定部分缓冲区内容写入磁盘
             buffer.force(3, 2);
             file.close();
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testFileChannelLockA() {
+        try (final RandomAccessFile randomAccessFile = new RandomAccessFile("test.txt", "rw");
+             final FileChannel fileChannel = randomAccessFile.getChannel()) {
+//            final FileLock lock = fileChannel.lock();
+            // 锁文件的 0~6, 采用共享锁;
+            //https://blog.csdn.net/wangbaochu/article/details/48546717
+            final FileLock lock = fileChannel.lock(0, 6, true);
+            Thread.sleep(10000);
+            lock.release();
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testFileChannelLockB() {
+        try (final RandomAccessFile randomAccessFile = new RandomAccessFile("test.txt", "rw");
+             final FileChannel fileChannel = randomAccessFile.getChannel()) {
+//            final FileLock lock = fileChannel.lock();
+            // 锁文件的 0~6, 采用共享锁; 共享锁允许
+            final FileLock lock = fileChannel.lock(0, 6, true);
+            fileChannel.write(ByteBuffer.wrap("测试".getBytes(UTF_8)));
+            lock.release();
         } catch (Throwable t) {
             t.printStackTrace();
         }
