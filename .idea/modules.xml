@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/jdk21-learn.iml" filepath="$PROJECT_DIR$/.idea/jdk21-learn.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nio-demo/nio-demo.iml" filepath="$PROJECT_DIR$/nio-demo/nio-demo.iml" />
     </modules>
   </component>
 </project>

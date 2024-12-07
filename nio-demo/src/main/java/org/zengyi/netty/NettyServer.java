@@ -8,6 +8,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.EventListener;
@@ -52,6 +54,8 @@ public class NettyServer {
 //                                });
                     }
                 });
-        bootstrap.bind(12345);
+        final ChannelFuture channelFuture = bootstrap.bind(12345);
+        // channelFuture.sync(); // 阻塞等待执行完成
+        channelFuture.addListener(future -> System.out.println("服务器是否启动完成: " + future.isDone()));
     }
 }
