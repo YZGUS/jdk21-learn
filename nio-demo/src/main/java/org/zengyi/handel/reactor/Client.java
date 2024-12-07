@@ -14,7 +14,7 @@ public class Client {
             System.out.println("已经连接到服务器");
             while (true) {
                 System.out.println("请输入要发送的消息：");
-                // 当输入回车时, 是 nextLine 卡柱, 需要输入 "\n"
+                // 当输入回车时, 是 nextLine 卡住, 需要输入 "\n"
                 final String nextLine = scanner.nextLine();
                 socketChannel.write(ByteBuffer.wrap(nextLine.getBytes()));
 
