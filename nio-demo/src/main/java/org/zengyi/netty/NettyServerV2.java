@@ -93,7 +93,7 @@ public class NettyServerV2 {
         }
     }
 
-    // 注意: 与网络交互的一定是 ByteBuf!!!!
+    // 注意: 与网络交互的一定是 ByteBuf!!!! 参考 https://cloud.tencent.com/developer/article/1152643?from_column=20421&from=20421
     private static final class MyCodec extends MessageToMessageCodec<ByteBuf, String> {
         @Override
         protected void encode(ChannelHandlerContext ctx, String msg, List<Object> out) throws Exception {

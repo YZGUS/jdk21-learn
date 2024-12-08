@@ -1,16 +1,17 @@
 package org.zengyi.netty;
 
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 
 public class ResourceLoader {
     public static void main(String[] args) {
         ClassLoader classLoader = ResourceLoader.class.getClassLoader();
-        try {
-            Enumeration<URL> resources = classLoader.getResources("");
-            while (resources.hasMoreElements()) {
-                // file:/Users/cengyi/Desktop/code/jdk21-learn/nio-demo/target/classes/
-                System.out.println(resources.nextElement());
+        try (final InputStream in = classLoader.getResourceAsStream("/index.html")) {
+            if (in == null) {
+                System.out.println("not found");
+            } else {
+                System.out.println("available: " + in.available());
             }
         } catch (Exception e) {
             e.printStackTrace();
