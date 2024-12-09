@@ -6,6 +6,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.FixedValue;
+import net.bytebuddy.implementation.MethodDelegation;
 import org.junit.Test;
 
 import java.io.File;
@@ -96,5 +97,19 @@ public class ByteBuddyTest {
         void setNewField(String newField);
 
         String getNewField();
+    }
+
+    @Test
+    public void testMethodDelegation() throws Throwable {
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().subclass(MyClass.class).method(named("print"))
+                // 默认为委托给签名(方法名)相同的静态方法！！！
+                // .intercept(MethodDelegation.to(MyDelegationClass.class))
+                // 默认委托给同签名的成员方法, 如果为 static 则存在问题: org.zengyi.MyDelegationClass@1a38c59b
+                // 当拦截类中指定了 @RuntimeType 注解则会委托到该注解标注的方法, 注意当有同名方法时优先同名？？
+                .intercept(MethodDelegation.to(new MyDelegationClass())).make();
+        final DynamicType.Loaded<MyClass> loaded = unloaded.load(getClass().getClassLoader());
+        final MyClass myClass = loaded.getLoaded().newInstance();
+        System.out.println(myClass.print());
+        loaded.saveIn(new File(PATH));
     }
 }
