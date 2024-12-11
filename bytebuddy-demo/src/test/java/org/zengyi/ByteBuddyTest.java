@@ -7,13 +7,15 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.FixedValue;
 import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.implementation.SuperMethodCall;
+import net.bytebuddy.implementation.bind.annotation.Morph;
+import net.bytebuddy.matcher.ElementMatchers;
 import org.junit.Test;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
 
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.returns;
+import static net.bytebuddy.matcher.ElementMatchers.*;
 
 public class ByteBuddyTest {
 
@@ -44,13 +46,17 @@ public class ByteBuddyTest {
     }
 
     public void testInjectJar() throws Throwable {
-        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().subclass(MyClass.class).make();
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
+                .subclass(MyClass.class)
+                .make();
         // unloaded.inject() //  将生成的字节码注入到指定的 jar 包中
     }
 
     @Test
     public void testInstanceMethod() throws Throwable {
-        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().subclass(MyClass.class).method(named("print")) // 指定要拦截的方法
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
+                .subclass(MyClass.class)
+                .method(named("print")) // 指定要拦截的方法
                 .intercept(FixedValue.value("intercept")) // 拦截处理逻辑
                 .make(); // class 尚未加载到 JVM 中
         final DynamicType.Loaded<MyClass> loaded = unloaded.load(getClass().getClassLoader()); // 加载到 JVM 中
@@ -71,13 +77,23 @@ public class ByteBuddyTest {
         final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
                 // .subclass(MyClass.class)
                 // .rebase(MyClass.class)
-                .redefine(MyClass.class).name("EnhanceMyClass").method(named("print").and(returns(TypeDescription.class).or(returns(TypeDescription.OBJECT)).or(returns(TypeDescription.STRING)))).intercept(FixedValue.value("intercept")).make();
+                .redefine(MyClass.class)
+                .name("EnhanceMyClass")
+                .method(named("print")
+                        .and(returns(TypeDescription.class)
+                                .or(returns(TypeDescription.OBJECT))
+                                .or(returns(TypeDescription.STRING))))
+                .intercept(FixedValue.value("intercept"))
+                .make();
         unloaded.saveIn(new File(PATH));
     }
 
     @Test
     public void testInsertNewMethod() throws Throwable {
-        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().redefine(MyClass.class).name("InsertMethodClass").defineMethod("print2", String.class, Modifier.PUBLIC) // 定义方法
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
+                .redefine(MyClass.class)
+                .name("InsertMethodClass")
+                .defineMethod("print2", String.class, Modifier.PUBLIC) // 定义方法
                 .withParameter(String[].class, "args") // 制定方法参数
                 .intercept(FixedValue.value("new method")) // 拦截处理逻辑
                 .make();
@@ -86,22 +102,19 @@ public class ByteBuddyTest {
 
     @Test
     public void testInsertNewField() throws Throwable {
-        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().redefine(MyClass.class).name("InsertFieldClass").defineField("newField", String.class, Modifier.PRIVATE) // 定义方法
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
+                .redefine(MyClass.class)
+                .name("InsertFieldClass")
+                .defineField("newField", String.class, Modifier.PRIVATE) // 定义方法
                 .implement(NewFieldInterface.class) // 指定字段的 Get 和 Set 所在的接口, 注意接口必须可见
                 .intercept(FieldAccessor.ofField("newField")).make();
         unloaded.saveIn(new File(PATH));
     }
 
-    public interface NewFieldInterface {
-
-        void setNewField(String newField);
-
-        String getNewField();
-    }
-
     @Test
     public void testMethodDelegation() throws Throwable {
-        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().subclass(MyClass.class).method(named("print"))
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
+                .subclass(MyClass.class).method(named("print"))
                 // 默认为委托给签名(方法名)相同的静态方法！！！
                 // .intercept(MethodDelegation.to(MyDelegationClass.class))
                 // 默认委托给同签名的成员方法, 如果为 static 则存在问题: org.zengyi.MyDelegationClass@1a38c59b
@@ -110,6 +123,41 @@ public class ByteBuddyTest {
         final DynamicType.Loaded<MyClass> loaded = unloaded.load(getClass().getClassLoader());
         final MyClass myClass = loaded.getLoaded().newInstance();
         System.out.println(myClass.print());
+        loaded.saveIn(new File(PATH));
+    }
+
+    @Test
+    public void testModifyArgs() throws Throwable {
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().subclass(MyClass.class).method(named("printAge")).intercept(MethodDelegation.withDefaultConfiguration().withBinders(Morph.Binder.install(MyCallable.class)).to(new MyModifyArgsClass())).make();
+        final DynamicType.Loaded<MyClass> loaded = unloaded.load(getClass().getClassLoader());
+        final MyClass myClass = loaded.getLoaded().newInstance();
+        System.out.printf(myClass.printAge(100));
+        loaded.saveIn(new File(PATH));
+    }
+
+    @Test
+    public void testConstructorAdvice() throws Throwable {
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
+                .subclass(MyClass.class)
+                .constructor(any())
+                .intercept(SuperMethodCall.INSTANCE.andThen( // 指定构造方法在执行完成后再委托给拦截器
+                        MethodDelegation.to(new MyConstructorClass()))).make();
+        final DynamicType.Loaded<MyClass> loaded = unloaded.load(getClass().getClassLoader());
+        final MyClass myClass = loaded.getLoaded().newInstance();
+        loaded.saveIn(new File(PATH));
+    }
+
+    @Test
+    public void testStaticMethodAdvice() throws Throwable {
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
+                // .subclass(MyClass.class) // 会增强失败
+                .rebase(MyClass.class)
+                .name("a.b.StaticMethodAdvice")
+                .method(ElementMatchers.named("sayWhat"))
+                .intercept(MethodDelegation.to(new MyStaticMethodClass()))
+                .make();
+        final DynamicType.Loaded<MyClass> loaded = unloaded.load(getClass().getClassLoader());
+        loaded.getLoaded().getMethod("sayWhat", String.class).invoke(null, "hello world");
         loaded.saveIn(new File(PATH));
     }
 }
