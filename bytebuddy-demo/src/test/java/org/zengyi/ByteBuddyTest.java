@@ -5,10 +5,7 @@ import net.bytebuddy.NamingStrategy;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType;
-import net.bytebuddy.implementation.FieldAccessor;
-import net.bytebuddy.implementation.FixedValue;
-import net.bytebuddy.implementation.MethodDelegation;
-import net.bytebuddy.implementation.SuperMethodCall;
+import net.bytebuddy.implementation.*;
 import net.bytebuddy.implementation.bind.annotation.Morph;
 import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.pool.TypePool;
@@ -167,6 +164,16 @@ public class ByteBuddyTest {
                 .redefine(describe, compound)
                 .method(named("hello"))
                 .intercept(FixedValue.nullValue())
+                .make()
+                .saveIn(new File(PATH));
+    }
+
+    @Test
+    public void testClearMethod() throws Throwable {
+        new ByteBuddy()
+                .redefine(MyClass.class)
+                .method(any())
+                .intercept(StubMethod.INSTANCE)
                 .make()
                 .saveIn(new File(PATH));
     }

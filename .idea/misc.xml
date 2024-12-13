@@ -7,6 +7,8 @@
         <option value="$PROJECT_DIR$/virtual-thread/pom.xml" />
         <option value="$PROJECT_DIR$/nio-demo/pom.xml" />
         <option value="$PROJECT_DIR$/bytebuddy-demo/pom.xml" />
+        <option value="$PROJECT_DIR$/jdk-agent/pom.xml" />
+        <option value="$PROJECT_DIR$/spring-demo/pom.xml" />
       </list>
     </option>
   </component>
