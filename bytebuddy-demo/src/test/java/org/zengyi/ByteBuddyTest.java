@@ -3,6 +3,7 @@ package org.zengyi;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.NamingStrategy;
 import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.FixedValue;
@@ -10,6 +11,7 @@ import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.SuperMethodCall;
 import net.bytebuddy.implementation.bind.annotation.Morph;
 import net.bytebuddy.matcher.ElementMatchers;
+import net.bytebuddy.pool.TypePool;
 import org.junit.Test;
 
 import java.io.File;
@@ -46,17 +48,13 @@ public class ByteBuddyTest {
     }
 
     public void testInjectJar() throws Throwable {
-        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
-                .subclass(MyClass.class)
-                .make();
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().subclass(MyClass.class).make();
         // unloaded.inject() //  将生成的字节码注入到指定的 jar 包中
     }
 
     @Test
     public void testInstanceMethod() throws Throwable {
-        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
-                .subclass(MyClass.class)
-                .method(named("print")) // 指定要拦截的方法
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().subclass(MyClass.class).method(named("print")) // 指定要拦截的方法
                 .intercept(FixedValue.value("intercept")) // 拦截处理逻辑
                 .make(); // class 尚未加载到 JVM 中
         final DynamicType.Loaded<MyClass> loaded = unloaded.load(getClass().getClassLoader()); // 加载到 JVM 中
@@ -77,23 +75,13 @@ public class ByteBuddyTest {
         final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
                 // .subclass(MyClass.class)
                 // .rebase(MyClass.class)
-                .redefine(MyClass.class)
-                .name("EnhanceMyClass")
-                .method(named("print")
-                        .and(returns(TypeDescription.class)
-                                .or(returns(TypeDescription.OBJECT))
-                                .or(returns(TypeDescription.STRING))))
-                .intercept(FixedValue.value("intercept"))
-                .make();
+                .redefine(MyClass.class).name("EnhanceMyClass").method(named("print").and(returns(TypeDescription.class).or(returns(TypeDescription.OBJECT)).or(returns(TypeDescription.STRING)))).intercept(FixedValue.value("intercept")).make();
         unloaded.saveIn(new File(PATH));
     }
 
     @Test
     public void testInsertNewMethod() throws Throwable {
-        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
-                .redefine(MyClass.class)
-                .name("InsertMethodClass")
-                .defineMethod("print2", String.class, Modifier.PUBLIC) // 定义方法
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().redefine(MyClass.class).name("InsertMethodClass").defineMethod("print2", String.class, Modifier.PUBLIC) // 定义方法
                 .withParameter(String[].class, "args") // 制定方法参数
                 .intercept(FixedValue.value("new method")) // 拦截处理逻辑
                 .make();
@@ -102,10 +90,7 @@ public class ByteBuddyTest {
 
     @Test
     public void testInsertNewField() throws Throwable {
-        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
-                .redefine(MyClass.class)
-                .name("InsertFieldClass")
-                .defineField("newField", String.class, Modifier.PRIVATE) // 定义方法
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().redefine(MyClass.class).name("InsertFieldClass").defineField("newField", String.class, Modifier.PRIVATE) // 定义方法
                 .implement(NewFieldInterface.class) // 指定字段的 Get 和 Set 所在的接口, 注意接口必须可见
                 .intercept(FieldAccessor.ofField("newField")).make();
         unloaded.saveIn(new File(PATH));
@@ -113,8 +98,7 @@ public class ByteBuddyTest {
 
     @Test
     public void testMethodDelegation() throws Throwable {
-        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
-                .subclass(MyClass.class).method(named("print"))
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().subclass(MyClass.class).method(named("print"))
                 // 默认为委托给签名(方法名)相同的静态方法！！！
                 // .intercept(MethodDelegation.to(MyDelegationClass.class))
                 // 默认委托给同签名的成员方法, 如果为 static 则存在问题: org.zengyi.MyDelegationClass@1a38c59b
@@ -137,11 +121,8 @@ public class ByteBuddyTest {
 
     @Test
     public void testConstructorAdvice() throws Throwable {
-        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
-                .subclass(MyClass.class)
-                .constructor(any())
-                .intercept(SuperMethodCall.INSTANCE.andThen( // 指定构造方法在执行完成后再委托给拦截器
-                        MethodDelegation.to(new MyConstructorClass()))).make();
+        final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy().subclass(MyClass.class).constructor(any()).intercept(SuperMethodCall.INSTANCE.andThen( // 指定构造方法在执行完成后再委托给拦截器
+                MethodDelegation.to(new MyConstructorClass()))).make();
         final DynamicType.Loaded<MyClass> loaded = unloaded.load(getClass().getClassLoader());
         final MyClass myClass = loaded.getLoaded().newInstance();
         loaded.saveIn(new File(PATH));
@@ -150,14 +131,43 @@ public class ByteBuddyTest {
     @Test
     public void testStaticMethodAdvice() throws Throwable {
         final DynamicType.Unloaded<MyClass> unloaded = new ByteBuddy()
-                // .subclass(MyClass.class) // 会增强失败
-                .rebase(MyClass.class)
-                .name("a.b.StaticMethodAdvice")
-                .method(ElementMatchers.named("sayWhat"))
-                .intercept(MethodDelegation.to(new MyStaticMethodClass()))
-                .make();
+                // .subclass(MyClass.class) // 会增强失败: 静态方法不能被继承
+                // .redefine(MyClass.class) // 会增强失败: redefine 不会保留原始方法 @SuperCall 不会生效
+                .rebase(MyClass.class).name("a.b.StaticMethodAdvice").method(ElementMatchers.named("sayWhat")).intercept(MethodDelegation.to(new MyStaticMethodClass())).make();
         final DynamicType.Loaded<MyClass> loaded = unloaded.load(getClass().getClassLoader());
         loaded.getLoaded().getMethod("sayWhat", String.class).invoke(null, "hello world");
         loaded.saveIn(new File(PATH));
+    }
+
+    @Test
+    public void testLoadClassForJar() throws Throwable {
+        final String path = "/Users/cengyi/.m2/repository/org/springframework/spring-core/5.3.24/spring-core-5.3.24.jar";
+        final ClassFileLocator springCoreLocator = ClassFileLocator.ForJarFile.of(new File(path));
+        final ClassFileLocator systemLoader = ClassFileLocator.ForClassLoader.ofSystemLoader();
+        final ClassFileLocator.Compound compound = new ClassFileLocator.Compound(springCoreLocator, systemLoader);
+        final TypePool typePool = TypePool.Default.of(compound);
+        final TypeDescription description = typePool.describe("org.springframework.util.StopWatch").resolve();
+        new ByteBuddy()
+                .redefine(description, compound)
+                .method(named("getId"))
+                .intercept(FixedValue.nullValue())
+                .make()
+                .saveIn(new File(PATH));
+    }
+
+    @Test
+    public void testLoadClassForFolder() throws Throwable {
+        final String path = "/Users/cengyi/Desktop/code/spring5-demo/target/classes";
+        final ClassFileLocator.ForFolder folderLocator = new ClassFileLocator.ForFolder(new File(path));
+        final ClassFileLocator systemLoader = ClassFileLocator.ForClassLoader.ofSystemLoader();
+        final ClassFileLocator.Compound compound = new ClassFileLocator.Compound(folderLocator, systemLoader);
+        final TypePool typePool = TypePool.Default.of(compound);
+        final TypeDescription describe = typePool.describe("org.zengyi.spring5demo.demos.web.BasicController").resolve();
+        new ByteBuddy()
+                .redefine(describe, compound)
+                .method(named("hello"))
+                .intercept(FixedValue.nullValue())
+                .make()
+                .saveIn(new File(PATH));
     }
 }
