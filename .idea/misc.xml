@@ -9,6 +9,7 @@
         <option value="$PROJECT_DIR$/bytebuddy-demo/pom.xml" />
         <option value="$PROJECT_DIR$/jdk-agent/pom.xml" />
         <option value="$PROJECT_DIR$/spring-demo/pom.xml" />
+        <option value="$PROJECT_DIR$/bytebuddy-agent/pom.xml" />
       </list>
     </option>
   </component>
