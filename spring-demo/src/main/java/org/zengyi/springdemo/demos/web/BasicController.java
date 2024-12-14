@@ -16,17 +16,22 @@
 
 package org.zengyi.springdemo.demos.web;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.zengyi.springdemo.demos.service.UserService;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:chenxilzx1@gmail.com">theonefx</a>
  */
-@Controller
+@RestController
 public class BasicController {
+
+    private final UserService userService;
+
+    public BasicController(UserService userService) {
+        this.userService = userService;
+    }
 
     // http://127.0.0.1:8080/hello?name=lisi
     @RequestMapping("/hello")
@@ -66,5 +71,15 @@ public class BasicController {
     public void parseUser(@RequestParam(name = "name", defaultValue = "unknown user") String name, @RequestParam(name = "age", defaultValue = "12") Integer age, User user) {
         user.setName("zhangsan");
         user.setAge(18);
+    }
+
+    @RequestMapping("/selectAll")
+    public void selectAll() {
+        try {
+            final List<User> users = userService.selectAll();
+            System.out.println(users);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 }

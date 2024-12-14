@@ -10,6 +10,7 @@
         <option value="$PROJECT_DIR$/jdk-agent/pom.xml" />
         <option value="$PROJECT_DIR$/spring-demo/pom.xml" />
         <option value="$PROJECT_DIR$/bytebuddy-agent/pom.xml" />
+        <option value="$PROJECT_DIR$/skywalking-demo/pom.xml" />
       </list>
     </option>
   </component>
