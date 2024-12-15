@@ -8,7 +8,7 @@ import net.bytebuddy.matcher.ElementMatcher;
  */
 public interface IndirectMatcher extends ClassMatcher {
 
-    ElementMatcher.Junction<? extends TypeDescription> buildJunction();
+    ElementMatcher.Junction<? super TypeDescription> buildJunction();
 
     boolean isMatch(TypeDescription typeDescription);
 }

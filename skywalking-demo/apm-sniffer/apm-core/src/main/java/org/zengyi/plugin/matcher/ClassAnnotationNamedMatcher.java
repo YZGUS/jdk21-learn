@@ -21,8 +21,8 @@ public class ClassAnnotationNamedMatcher implements IndirectMatcher {
     }
 
     @Override
-    public ElementMatcher.Junction<? extends TypeDescription> buildJunction() {
-        ElementMatcher.Junction<? extends TypeDescription> junction = null;
+    public ElementMatcher.Junction<? super TypeDescription> buildJunction() {
+        ElementMatcher.Junction<? super TypeDescription> junction = null;
         for (String annotationName : annotationNames) {
             if (junction == null) {
                 junction = isAnnotatedWith(named(annotationName));

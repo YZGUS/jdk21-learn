@@ -36,7 +36,7 @@ public class PluginFinder {
 
     public ElementMatcher<? super TypeDescription> buildMatch() {
         // 泛型的 super 和 extends : https://zhuanlan.zhihu.com/p/249187830
-        final ElementMatcher.Junction junction = new ElementMatcher.Junction.AbstractBase<NamedElement>() {
+        final ElementMatcher.Junction<? super TypeDescription> junction = new ElementMatcher.Junction.AbstractBase<NamedElement>() {
             @Override
             public boolean matches(NamedElement target) {
                 return namedPluginDefineMap.containsKey(target.getActualName());

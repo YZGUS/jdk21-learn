@@ -19,8 +19,8 @@ public class MultiClassMatcher implements IndirectMatcher {
     }
 
     @Override
-    public ElementMatcher.Junction<? extends TypeDescription> buildJunction() {
-        ElementMatcher.Junction<? extends TypeDescription> junction = null;
+    public ElementMatcher.Junction<? super TypeDescription> buildJunction() {
+        ElementMatcher.Junction<? super TypeDescription> junction = null;
         for (String className : needMatchClassNames) {
             if (junction == null) {
                 junction = ElementMatchers.named(className);
