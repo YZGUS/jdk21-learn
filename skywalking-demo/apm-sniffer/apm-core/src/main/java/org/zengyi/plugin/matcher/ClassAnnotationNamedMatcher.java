@@ -1,8 +1,11 @@
-package org.zengyi.matcher;
+package org.zengyi.plugin.matcher;
 
-import net.bytebuddy.description.type.TypeDefinition;
+import net.bytebuddy.description.annotation.AnnotationDescription;
+import net.bytebuddy.description.annotation.AnnotationList;
+import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,8 +21,8 @@ public class ClassAnnotationNamedMatcher implements IndirectMatcher {
     }
 
     @Override
-    public ElementMatcher.Junction<? extends TypeDefinition> buildJunction() {
-        ElementMatcher.Junction<? extends TypeDefinition> junction = null;
+    public ElementMatcher.Junction<? extends TypeDescription> buildJunction() {
+        ElementMatcher.Junction<? extends TypeDescription> junction = null;
         for (String annotationName : annotationNames) {
             if (junction == null) {
                 junction = isAnnotatedWith(named(annotationName));
@@ -28,6 +31,16 @@ public class ClassAnnotationNamedMatcher implements IndirectMatcher {
             }
         }
         return junction;
+    }
+
+    @Override
+    public boolean isMatch(TypeDescription typeDescription) {
+        final AnnotationList annotations = typeDescription.getInheritedAnnotations();
+        final ArrayList<String> tmpAnnationNames = new ArrayList<>(annotationNames);
+        for (AnnotationDescription annotation : annotations) {
+            tmpAnnationNames.remove(annotation.getAnnotationType().getActualName());
+        }
+        return tmpAnnationNames.isEmpty();
     }
 
     public static IndirectMatcher byAnnotationNames(String... annotationNames) {

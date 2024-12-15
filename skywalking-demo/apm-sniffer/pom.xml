@@ -18,7 +18,7 @@
     </properties>
 
     <modules>
-        <module>apm-agnet</module>
+        <module>apm-agent</module>
         <module>apm-core</module>
         <module>apm-plugins</module>
     </modules>

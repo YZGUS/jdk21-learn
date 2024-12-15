@@ -1,8 +1,8 @@
 package org.zengyi;
 
-import org.zengyi.matcher.ClassMatcher;
+import org.zengyi.plugin.matcher.ClassMatcher;
 
-import static org.zengyi.matcher.ClassAnnotationNamedMatcher.byAnnotationNames;
+import static org.zengyi.plugin.matcher.ClassAnnotationNamedMatcher.byAnnotationNames;
 
 public class SpringMVCRestControllerInstrumentation extends SpringMVCCommonInstrumentation {
 

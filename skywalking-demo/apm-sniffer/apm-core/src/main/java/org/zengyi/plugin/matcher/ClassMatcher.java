@@ -1,4 +1,4 @@
-package org.zengyi.matcher;
+package org.zengyi.plugin.matcher;
 
 /**
  * 所有类匹配器的顶级接口，本身空实现
@@ -8,5 +8,5 @@ package org.zengyi.matcher;
  * 2.2 ClassAnnotationNameMatch：匹配同时带有多个指定注解的类匹配器（多个注解之间是and的关系）
  */
 public interface ClassMatcher {
-    
+
 }

@@ -1,6 +1,6 @@
-package org.zengyi.matcher;
+package org.zengyi.plugin.matcher;
 
-import net.bytebuddy.description.type.TypeDefinition;
+import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatchers;
 
@@ -19,8 +19,8 @@ public class MultiClassMatcher implements IndirectMatcher {
     }
 
     @Override
-    public ElementMatcher.Junction<? extends TypeDefinition> buildJunction() {
-        ElementMatcher.Junction<? extends TypeDefinition> junction = null;
+    public ElementMatcher.Junction<? extends TypeDescription> buildJunction() {
+        ElementMatcher.Junction<? extends TypeDescription> junction = null;
         for (String className : needMatchClassNames) {
             if (junction == null) {
                 junction = ElementMatchers.named(className);
@@ -31,7 +31,12 @@ public class MultiClassMatcher implements IndirectMatcher {
         return junction;
     }
 
-    public static IndirectMatcher byMultiClassNames(String[] classNames) {
+    @Override
+    public boolean isMatch(TypeDescription typeDescription) {
+        return needMatchClassNames.contains(typeDescription.getActualName());
+    }
+
+    public static IndirectMatcher byMultiClassNames(String... classNames) {
         return new MultiClassMatcher(classNames);
     }
 }

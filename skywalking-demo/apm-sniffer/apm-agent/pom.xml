@@ -8,7 +8,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>apm-agnet</artifactId>
+    <artifactId>apm-agent</artifactId>
     <packaging>jar</packaging>
 
     <name>apm-agnet</name>
@@ -64,6 +64,42 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <delete dir="${project.basedir}/../../dist"/>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.basedir}/../../dist"/>
+                                <copy file="${project.build.directory}/apm-agent-1.0-SNAPSHOT-jar-with-dependencies.jar"
+                                      tofile="${project.basedir}/../../dist/apm-agent-1.0-SNAPSHOT-jar-with-dependencies.jar"
+                                      overwrite="true"/>
+                                <mkdir dir="${project.basedir}/../../dist/plugins"/>
+                            </target>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

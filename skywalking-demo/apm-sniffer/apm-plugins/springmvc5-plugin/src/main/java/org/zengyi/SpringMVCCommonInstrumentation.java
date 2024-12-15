@@ -2,13 +2,14 @@ package org.zengyi;
 
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.zengyi.interceptor.ConstructorMethodsInterceptorPoint;
-import org.zengyi.interceptor.InstanceMethodInterceptorPoint;
-import org.zengyi.interceptor.StaticMethodInterceptorPoint;
+import org.zengyi.plugin.interceptor.ConstructorMethodsInterceptorPoint;
+import org.zengyi.plugin.interceptor.InstanceMethodInterceptorPoint;
+import org.zengyi.plugin.interceptor.StaticMethodInterceptorPoint;
+import org.zengyi.plugin.interceptor.enhance.ClassEnhancePluginDefine;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-public abstract class SpringMVCCommonInstrumentation extends AbstractClassEnhancePluginDefine {
+public abstract class SpringMVCCommonInstrumentation extends ClassEnhancePluginDefine {
 
     @Override
     protected ConstructorMethodsInterceptorPoint[] getConstructorInterceptPoints() {
@@ -27,7 +28,7 @@ public abstract class SpringMVCCommonInstrumentation extends AbstractClassEnhanc
 
                     @Override
                     public String getInstanceInterceptor() {
-                        return "org.zengyi.interceptor.SpringMVCInterceptor";
+                        return "org.zengyi.plugin.interceptor.SpringMVCInterceptor";
                     }
                 }
         };

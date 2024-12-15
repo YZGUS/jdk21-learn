@@ -1,4 +1,4 @@
-package org.zengyi.interceptor;
+package org.zengyi.plugin.interceptor;
 
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.matcher.ElementMatcher;
