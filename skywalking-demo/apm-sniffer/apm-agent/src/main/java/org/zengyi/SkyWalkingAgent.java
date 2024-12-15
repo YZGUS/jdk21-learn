@@ -7,6 +7,7 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.utility.JavaModule;
 import org.zengyi.plugin.AbstractClassEnhancePluginDefine;
+import org.zengyi.plugin.PluginBootstarp;
 import org.zengyi.plugin.PluginFinder;
 import org.zengyi.plugin.interceptor.enhance.EnhanceContext;
 
@@ -20,7 +21,7 @@ public class SkyWalkingAgent {
         System.out.println("skywalking agent premain, args=" + args);
         PluginFinder pluginFinder = null;
         try {
-            pluginFinder = new PluginFinder(null);
+            pluginFinder = new PluginFinder(new PluginBootstarp().loadPlugins());
         } catch (Throwable t) {
             System.out.println("初始化失败");
             t.printStackTrace();
